@@ -5,8 +5,8 @@ BIN     := bin
 SRC     := src
 INCLUDE := include
 
-LIBRARIES   := -lglfw -lGL
-EXECUTABLE  := a.out
+LIBRARIES   := -lglfw3dll -lopengl32
+EXECUTABLE  := a.exe
 
 
 all: $(BIN)/$(EXECUTABLE)
