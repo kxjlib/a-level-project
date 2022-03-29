@@ -1,10 +1,10 @@
-#include "engine/engine.h"
+#include "application/Application.h"
 
 int main()
 {
-    // Initialise Engine and run mainloo
-    Engine engine;
-    engine.run();
-
+    // Initialise Application and run mainloop
+    Application app;
+    app.run();
+    
     return 0;
 }
