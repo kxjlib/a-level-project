@@ -1,15 +1,18 @@
 #include "application/Application.h"
 #include "renderer/ShaderProgram.h"
+#include "utils/AssetManager.h"
 
 Application::Application() {
     if(!glHandler.init()) {
         throw std::runtime_error(glHandler.getError());
     }
 
+    AssetManager assetManager;
+
     // Create Shader Programs
     ShaderProgram program(
-        "assets/shaders/triangle.vert",
-        "assets/shaders/triangle.frag"
+        assetManager.getPath("assets/shaders/triangle.vert").c_str(),
+        assetManager.getPath("assets/shaders/triangle.frag").c_str()
     );
 }
 
