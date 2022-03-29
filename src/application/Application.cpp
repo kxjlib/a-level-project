@@ -1,5 +1,5 @@
 #include "application/Application.h"
-#include "renderer/Shader.h"
+#include "renderer/ShaderProgram.h"
 
 Application::Application() {
     if(!glHandler.init()) {
@@ -7,13 +7,10 @@ Application::Application() {
     }
 
     // Create Shader Programs
-    const char* shaderSource = "#version 330 core\n"
-    "layout (location = 0) in vec3 aPos;\n"
-    "void main()\n"
-    "{\n"
-    "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-    "}\0";
-    Shader shader = Shader(GL_VERTEX_SHADER, shaderSource);
+    ShaderProgram program(
+        "assets/shaders/triangle.vert",
+        "assets/shaders/triangle.frag"
+    );
 }
 
 Application::~Application() {
