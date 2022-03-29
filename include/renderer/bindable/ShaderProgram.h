@@ -4,11 +4,12 @@
 
 class ShaderProgram {
 public:
-    ShaderProgram(Shader vertex, Shader fragment);
     ShaderProgram(const char* vertexFilepath, const char* fragmentFilepath);
     ~ShaderProgram();
 
-    GLuint programID;
+    void use();
+
 private:
+    GLuint programID;
     void errorCheck();
 };

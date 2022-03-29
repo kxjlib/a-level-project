@@ -1,39 +1,6 @@
-#include "renderer/ShaderProgram.h"
+#include "renderer/bindable/ShaderProgram.h"
 #include "renderer/Shader.h"
-#include <fstream>
-#include <vector>
-
-// Readfile Function
-std::string readFile(const char* filename) {
-    
-    // Open file to ifs
-    std::ifstream ifs(filename, std::ios::in | std::ios::binary | std::ios::ate);
-
-    // get Filesize and set readhead to pos 0
-    std::ifstream::pos_type fileSize = ifs.tellg();
-    ifs.seekg(0, std::ios::beg);
-
-    // load file contents into bytes vector
-    std::vector<char> bytes(fileSize);
-    ifs.read(&bytes[0], fileSize);
-
-    // return as string
-    return std::string(&bytes[0], fileSize);
-}
-
-ShaderProgram::ShaderProgram(Shader vertex, Shader fragment) {
-    // Create Program Id
-    programID = glCreateProgram();
-
-    // Attach Fragment and Vertex Shaders
-    glAttachShader(programID, vertex.shaderID);
-    glAttachShader(programID, fragment.shaderID);
-
-    // Compile the Program
-    glLinkProgram(programID);
-
-    errorCheck();
-}
+#include "utils/utils.h"
 
 ShaderProgram::ShaderProgram(const char* vertFilepath, const char* fragFilepath) {
     // Create Program ID
@@ -73,4 +40,8 @@ void ShaderProgram::errorCheck() {
         std::string log = infoLog;
         throw std::runtime_error("[Error] Program Compilation:\n" + log + "\n");
     }
+}
+
+void ShaderProgram::use() {
+    glUseProgram(programID);
 }

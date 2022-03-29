@@ -1,5 +1,7 @@
 #include "renderer/GlHandler.h"
 
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+
 GlHandler::GlHandler() {
     glError = "";
 }
