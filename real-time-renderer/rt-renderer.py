@@ -9,6 +9,8 @@ import sys
 
 from renderer.WindowManager import GLWindow
 
+import numpy as np
+
 import moderngl
 import sdl2
 
@@ -33,9 +35,56 @@ ctx = moderngl.create_context(version=430)
 event = sdl2.SDL_Event()
 
 
+# Create Shaders and Program
+vert_shader = """
+#version 330
+
+in vec2 in_vert;
+
+in vec3 in_colour;
+out vec3 v_colour; // To Fragment Shader
+
+void main() {
+    gl_Position = vec4(in_vert, 0.0, 1.0);
+    v_colour = in_colour;
+}
+"""
+
+frag_shader = """
+#version 330
+
+in vec3 v_colour;
+out vec4 f_colour;
+
+void main() {
+    f_colour = vec4(v_colour, 1.0);
+}
+"""
+
+shader_program = ctx.program(vertex_shader=vert_shader,
+                             fragment_shader=frag_shader)
+
+tri_vertices = np.array([
+    # x,y, rgb
+     0.0,  0.8, 1.0, 0.0, 0.0,
+    -0.6, -0.8, 0.0, 1.0, 0.0,
+     0.6, -0.8, 0.0, 0.0, 1.0,
+], dtype='f4') # Use 4-byte (32-bit) floats
+
+vbo = ctx.buffer(tri_vertices)
+
+vao = ctx.vertex_array(
+    shader_program,
+    [
+        # in_vert needs to be first 2 floats
+        # in_colour needs to be the last 3
+        (vbo, '2f 3f', 'in_vert', 'in_colour')
+    ]
+)
+
 def render(ctx):
     ctx.clear(0.1, 0.1, 0.1)
-
+    vao.render()
 
 running = True
 frames = 0
@@ -47,8 +96,8 @@ while running:
 
     render(ctx)
 
-    if frames == 100:
-        window.resolution = (1024, 768)
+    #if frames == 100:
+    #    window.resolution = (1024, 768)
 
     # Swap window buffers (make currently rendered frame visible)
     sdl2.SDL_GL_SwapWindow(window.instance)
