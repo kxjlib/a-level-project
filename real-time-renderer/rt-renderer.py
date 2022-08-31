@@ -7,7 +7,7 @@
 import ctypes
 import sys
 
-from renderer.WindowManager import GLWindow
+import numpy as np
 
 import moderngl
 import sdl2
@@ -17,47 +17,60 @@ import sdl2
 if __name__ != "__main__":
     sys.exit(-1)
 
-# Create Window
-window = GLWindow("Real-time Renderer", 800, 600)
+
+# Initialisation
+
+# SDL2 init
+# If SDL fails to initialise then error out.
+if sdl2.SDL_Init(sdl2.SDL_INIT_VIDEO) != 0:
+    print(f"[ERROR] : {sdl2.SDL_GetError()}")
+    sys.exit(-1)
+
+# Create Window and GL Contex
+
+# Create window using SDL2
+wnd = sdl2.SDL_CreateWindow(b"Real-time Renderer",
+                            sdl2.SDL_WINDOWPOS_UNDEFINED,    # Window Location on the screen
+                            sdl2.SDL_WINDOWPOS_UNDEFINED,
+                            800,                            # Window Size
+                            600,
+                            sdl2.SDL_WINDOW_OPENGL          # Additional window flags
+                            )
 
 # Create GL Context
 
 # ModernGL Works by 'piggybacking' of an existing openGL context, and as such we
 # first need to create an OpenGL context in SDL before in ModernGL
+sdl_context = sdl2.SDL_GL_CreateContext(wnd)
 ctx = moderngl.create_context(version=430)
 
 
-# Window Mainloop
+### Window Mainloop
 
 # Create a reference to window events of the SDL window
 event = sdl2.SDL_Event()
 
-
 def render(ctx):
-    ctx.clear(0.1, 0.1, 0.1)
-
+    ctx.clear(0.1,0.1,0.1)
 
 running = True
-frames = 0
 while running:
     # Event Handling Loop
     while sdl2.SDL_PollEvent(ctypes.byref(event)) != 0:
         if event.type == sdl2.SDL_QUIT:
             running = False
-
+    
     render(ctx)
 
-    if frames == 100:
-        window.resolution = (1024, 768)
-
     # Swap window buffers (make currently rendered frame visible)
-    sdl2.SDL_GL_SwapWindow(window.instance)
+    sdl2.SDL_GL_SwapWindow(wnd)
 
     # Arbitrary Delay to stop excess resource usage
     sdl2.SDL_Delay(10)
-    frames += 1
 
 
-# Stop Floating Memory after program finish
+## Stop Floating Memory after program finish
 ctx.release()
+sdl2.SDL_GL_DeleteContext(sdl_context)
+sdl2.SDL_DestroyWindow(wnd)
 sdl2.SDL_Quit()
