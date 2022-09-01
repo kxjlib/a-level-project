@@ -66,9 +66,12 @@ shader_program = ctx.program(vertex_shader=vert_shader,
 
 tri_vertices = np.array([
     # x,y, rgb
-     0.0,  0.8, 1.0, 0.0, 0.0,
-    -0.6, -0.8, 0.0, 1.0, 0.0,
-     0.6, -0.8, 0.0, 0.0, 1.0,
+    -0.8,  0.8, 1.0, 0.0, 0.0,
+    -0.8, -0.8, 0.0, 1.0, 0.0,
+     0.8,  0.8, 0.0, 0.0, 1.0,
+     0.8, -0.8, 1.0, 1.0, 1.0,
+    -0.8, -0.8, 0.0, 1.0, 0.0,
+     0.8,  0.8, 0.0, 0.0, 1.0,
 ], dtype='f4') # Use 4-byte (32-bit) floats
 
 vbo = ctx.buffer(tri_vertices)
