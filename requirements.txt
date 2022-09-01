@@ -2,3 +2,4 @@ moderngl==5.6.4
 numpy==1.23.2
 PySDL2==0.9.13
 pysdl2-dll==2.0.22.post1
+pyrr==0.10.3

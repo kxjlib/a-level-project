@@ -11,6 +11,8 @@ from renderer.WindowManager import GLWindow
 
 import numpy as np
 
+from pyrr import Matrix44
+
 import moderngl
 import sdl2
 
@@ -20,7 +22,7 @@ if __name__ != "__main__":
     sys.exit(-1)
 
 # Create Window
-window = GLWindow("Real-time Renderer", 800, 600)
+window = GLWindow("Real-time Renderer", 1400, 600)
 
 # Create GL Context
 
@@ -66,12 +68,9 @@ shader_program = ctx.program(vertex_shader=vert_shader,
 
 tri_vertices = np.array([
     # x,y, rgb
-    -0.8,  0.8, 1.0, 0.0, 0.0,
-    -0.8, -0.8, 0.0, 1.0, 0.0,
-     0.8,  0.8, 0.0, 0.0, 1.0,
-     0.8, -0.8, 1.0, 1.0, 1.0,
-    -0.8, -0.8, 0.0, 1.0, 0.0,
-     0.8,  0.8, 0.0, 0.0, 1.0,
+     0.0,  0.8, 1.0, 0.0, 0.0,
+    -0.6, -0.8, 0.0, 1.0, 0.0,
+     0.6, -0.8, 0.0, 0.0, 1.0,
 ], dtype='f4') # Use 4-byte (32-bit) floats
 
 vbo = ctx.buffer(tri_vertices)
@@ -84,6 +83,9 @@ vao = ctx.vertex_array(
         (vbo, '2f 3f', 'in_vert', 'in_colour')
     ]
 )
+
+ctx.enable_only(moderngl.NOTHING)
+ctx.enable(moderngl.DEPTH_TEST | moderngl.CULL_FACE)
 
 def render(ctx):
     ctx.clear(0.1, 0.1, 0.1)
