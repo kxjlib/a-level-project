@@ -11,7 +11,7 @@ from renderer.WindowManager import GLWindow
 
 import numpy as np
 
-from pyrr import Matrix44
+from pyrr import Matrix44, Vector3
 
 import moderngl
 import sdl2
@@ -22,7 +22,7 @@ if __name__ != "__main__":
     sys.exit(-1)
 
 # Create Window
-window = GLWindow("Real-time Renderer", 1400, 600)
+window = GLWindow("Real-time Renderer", 800, 600)
 
 # Create GL Context
 
@@ -41,13 +41,15 @@ event = sdl2.SDL_Event()
 vert_shader = """
 #version 330
 
-in vec2 in_vert;
+uniform mat4 vmat;
+
+in vec3 in_vert;
 
 in vec3 in_colour;
 out vec3 v_colour; // To Fragment Shader
 
 void main() {
-    gl_Position = vec4(in_vert, 0.0, 1.0);
+    gl_Position = vmat * vec4(in_vert,1.0);
     v_colour = in_colour;
 }
 """
@@ -66,30 +68,51 @@ void main() {
 shader_program = ctx.program(vertex_shader=vert_shader,
                              fragment_shader=frag_shader)
 
+vmat = shader_program['vmat']
+
+view_matrix = Matrix44.perspective_projection(
+    70.0,  # Fov angle
+    # display aspect ratio (this will nead to be changed when we change the display size)
+    800.0 / 600.0,
+    0.1,  # near plane (how close before something stops being rendered)
+    100   # far plane (how far before something stops being renderered)
+)
+
+look_at = Matrix44.look_at(
+    # Location of the camera being used to view the scene
+    Vector3([0.0, 0.0, -10.0]),
+    # location plus the axis which the camera is pointing
+    Vector3([0.0, 0.0, -9.0]),
+    Vector3([0.0, 1.0, 0.0])  # the axis which is deemed as 'up'
+)
+
 tri_vertices = np.array([
-    # x,y, rgb
-     0.0,  0.8, 1.0, 0.0, 0.0,
-    -0.6, -0.8, 0.0, 1.0, 0.0,
-     0.6, -0.8, 0.0, 0.0, 1.0,
-], dtype='f4') # Use 4-byte (32-bit) floats
+    # x,y,z, rgb
+    0.0,  1.0,  0.0, 1.0, 0.0, 0.0,
+    -1.0, -1.0,  0.0, 0.0, 1.0, 0.0,
+    1.0, -1.0,  0.0, 0.0, 0.0, 1.0,
+], dtype='f4')  # Use 4-byte (32-bit) floats
 
 vbo = ctx.buffer(tri_vertices)
 
 vao = ctx.vertex_array(
     shader_program,
     [
-        # in_vert needs to be first 2 floats
+        # in_vert needs to be first 3 floats
         # in_colour needs to be the last 3
-        (vbo, '2f 3f', 'in_vert', 'in_colour')
+        (vbo, '3f 3f', 'in_vert', 'in_colour')
     ]
 )
 
 ctx.enable_only(moderngl.NOTHING)
-ctx.enable(moderngl.DEPTH_TEST | moderngl.CULL_FACE)
+ctx.enable(moderngl.DEPTH_TEST)
+
 
 def render(ctx):
     ctx.clear(0.1, 0.1, 0.1)
+    vmat.write((view_matrix * look_at).astype('f4'))
     vao.render()
+
 
 running = True
 frames = 0
@@ -101,7 +124,7 @@ while running:
 
     render(ctx)
 
-    #if frames == 100:
+    # if frames == 100:
     #    window.resolution = (1024, 768)
 
     # Swap window buffers (make currently rendered frame visible)
