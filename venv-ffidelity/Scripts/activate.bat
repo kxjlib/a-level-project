@@ -8,7 +8,7 @@ if defined _OLD_CODEPAGE (
     "%SystemRoot%\System32\chcp.com" 65001 > nul
 )
 
-set VIRTUAL_ENV=C:\Users\Will\Documents\Work\Computer Science\a-level-project\venv-ffidelity
+set VIRTUAL_ENV=C:\Users\Will\Documents\GitHub\a-level-project\venv-ffidelity
 
 if not defined PROMPT set PROMPT=$P$G
 
