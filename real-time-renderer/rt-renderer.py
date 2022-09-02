@@ -11,7 +11,7 @@ from renderer.WindowManager import GLWindow
 
 import numpy as np
 
-from pyrr import Matrix44, Vector3
+from pyrr import Matrix44, matrix44, Vector3
 
 import moderngl
 import sdl2
@@ -22,7 +22,7 @@ if __name__ != "__main__":
     sys.exit(-1)
 
 # Create Window
-window = GLWindow("Real-time Renderer", 800, 600)
+window = GLWindow("Real-time Renderer", 1400, 600)
 
 # Create GL Context
 
@@ -41,7 +41,7 @@ event = sdl2.SDL_Event()
 vert_shader = """
 #version 330
 
-uniform mat4 vmat;
+uniform mat4 mvp;
 
 in vec3 in_vert;
 
@@ -49,7 +49,7 @@ in vec3 in_colour;
 out vec3 v_colour; // To Fragment Shader
 
 void main() {
-    gl_Position = vmat * vec4(in_vert,1.0);
+    gl_Position = mvp * vec4(in_vert,1.0);
     v_colour = in_colour;
 }
 """
@@ -68,12 +68,12 @@ void main() {
 shader_program = ctx.program(vertex_shader=vert_shader,
                              fragment_shader=frag_shader)
 
-vmat = shader_program['vmat']
+mvp = shader_program['mvp']
 
 view_matrix = Matrix44.perspective_projection(
     70.0,  # Fov angle
     # display aspect ratio (this will nead to be changed when we change the display size)
-    800.0 / 600.0,
+    1400.0 / 600.0,
     0.1,  # near plane (how close before something stops being rendered)
     100   # far plane (how far before something stops being renderered)
 )
@@ -85,6 +85,8 @@ look_at = Matrix44.look_at(
     Vector3([0.0, 0.0, -9.0]),
     Vector3([0.0, 1.0, 0.0])  # the axis which is deemed as 'up'
 )
+
+model_matrix = Matrix44.from_translation(Vector3([0.0,0.0,0.0]))
 
 tri_vertices = np.array([
     # x,y,z, rgb
@@ -108,9 +110,10 @@ ctx.enable_only(moderngl.NOTHING)
 ctx.enable(moderngl.DEPTH_TEST)
 
 
-def render(ctx):
+def render(ctx, frames):
     ctx.clear(0.1, 0.1, 0.1)
-    vmat.write((view_matrix * look_at).astype('f4'))
+    model_matrix = Matrix44.from_translation(Vector3([frames/10.0,0.0,0.0]))
+    mvp.write((view_matrix * look_at * model_matrix).astype('f4'))
     vao.render()
 
 
@@ -122,7 +125,7 @@ while running:
         if event.type == sdl2.SDL_QUIT:
             running = False
 
-    render(ctx)
+    render(ctx, frames)
 
     # if frames == 100:
     #    window.resolution = (1024, 768)
