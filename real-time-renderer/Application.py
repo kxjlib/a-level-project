@@ -40,27 +40,11 @@ class Application(object):
         # first need to create an OpenGL context in SDL before in ModernGL
         self._ctx = moderngl.create_context(version=430)
 
-        self.view_matrix = Matrix44.perspective_projection(
-            70.0,  # Fov angle
-            # display aspect ratio (this will nead to be changed when we change the display size)
-            800.0 / 600.0,
-            0.1,  # near plane (how close before something stops being rendered)
-            100   # far plane (how far before something stops being renderered)
-        )
-
-        self.look_at = Matrix44.look_at(
-            # Location of the camera being used to view the scene
-            Vector3([0.0, 0.0, -10.0]),
-            # location plus the axis which the camera is pointing
-            Vector3([0.0, 0.0, -9.0]),
-            Vector3([0.0, 1.0, 0.0])  # the axis which is deemed as 'up'
-        )
-
+        # set OpenGL Settings
         self._ctx.enable_only(moderngl.NOTHING)
         self._ctx.enable(moderngl.DEPTH_TEST)
 
         self._cam = Camera(dimensions, [0.0,0.0,-10.0], [0.0,0.0,1.0])
-
     
     # Loads all shader files into the program and stores them
     def shader_init(self):
@@ -90,8 +74,8 @@ class Application(object):
     # Runs every frame - will control the render of all models
     def render(self, frames):
         self._ctx.clear(0.1, 0.1, 0.1)
-        tri_loc = Matrix44.from_translation(Vector3([frames/10.0,0.0,0.0]))
-        self._shaders['tri']['mvp'].write((self.view_matrix * self.look_at * tri_loc).astype('f4'))
+        tri_loc = Matrix44.from_translation(Vector3([frames/30.0,0.0,0.0]))
+        self._shaders['tri']['mvp'].write((self._cam.mv * tri_loc).astype('f4'))
         self.vao.render()
 
     # Runs every frame - will handle the logic used by the program
@@ -103,6 +87,13 @@ class Application(object):
         while sdl2.SDL_PollEvent(ctypes.byref(e)) != 0:
             if e.type == sdl2.SDL_QUIT:
                 self._run = False
+
+    def resize_window(self, res):
+        # Changes all relevant instances of the window resolution (definately should only be one)
+        self._wdim = res
+        self._ctx.viewport = ((0,0,*res))
+        self._winst.resolution = res
+        self._cam.resize_camera(res)
 
     # Main entrypoint into the program, will contain the mainloop
     def run(self):
