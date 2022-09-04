@@ -52,8 +52,7 @@ class Camera(object):
 
     # Moves The Camera
     def move(self,dpos):
-        self._pos = [p+d for p,d in zip(self._pos,dpos)]
-        self.create_loc_mat()
+        self.create_loc_mat([p+d for p,d in zip(self._pos,dpos)], self._dir)
 
     @property
     def mv(self):

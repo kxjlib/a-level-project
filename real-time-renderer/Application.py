@@ -11,9 +11,10 @@
 
 # Imports
 from renderer.WindowManager import GLWindow
-from renderer.bindable.ShaderProgram import ShaderProgram
 from renderer.Camera import Camera
-from pyrr import Matrix44, Vector3
+from renderer.Renderer import Renderer
+from renderer.bindable.ShaderProgram import ShaderProgram
+from renderer.bindable.Object import Object
 
 import numpy as np
 import ctypes
@@ -23,32 +24,40 @@ import sdl2
 
 class Application(object):
     # Variables which will be used by the class
-    _winst = None
-    _wdim = (800,600)
-    _run = False
-    _ctx = None
-    _cam = None
-    _shaders = {}
+    winst = None
+    wdim = (800,600)
+    run = False
+    ctx = None
+    rnd = None
+    shaders = {}
+    cam = None
 
     def __init__(self,title,dimensions):
-        self._wdim = dimensions
+        self.wdim = dimensions
         # We can unpack the dimensions tuple using the * prefix
         # This saves us from doing dimensions[0] and dimensions[1]
-        self._winst = GLWindow(title,*dimensions)
+        self.winst = GLWindow(title,*dimensions)
 
         # ModernGL Works by 'piggybacking' of an existing openGL context, and as such we
         # first need to create an OpenGL context in SDL before in ModernGL
-        self._ctx = moderngl.create_context(version=430)
+        self.ctx = moderngl.create_context(version=430)
 
         # set OpenGL Settings
-        self._ctx.enable_only(moderngl.NOTHING)
-        self._ctx.enable(moderngl.DEPTH_TEST)
+        self.ctx.enable_only(moderngl.NOTHING)
+        self.ctx.enable(moderngl.DEPTH_TEST)
 
-        self._cam = Camera(dimensions, [0.0,0.0,-10.0], [0.0,0.0,1.0])
-    
+        # Program initialisation
+        self.shader_init()
+        self.model_init()
+
+        self.rnd = Renderer(self.shaders)
+
+        # define Camera
+        self.cam = Camera(dimensions, [0.0,0.0,-10.0], [0.0,0.0,1.0])
+
     # Loads all shader files into the program and stores them
     def shader_init(self):
-        self._shaders['tri'] = ShaderProgram.from_filename(self._ctx, \
+        self.shaders['tri'] = ShaderProgram.from_filename(self.ctx, \
             pathlib.Path(__file__).parent.resolve().as_posix() + "/assets/tri")
     
     # Initialises all models to be used
@@ -60,10 +69,10 @@ class Application(object):
             1.0, -1.0,  0.0, 0.0, 0.0, 1.0,
         ], dtype='f4')  # Use 4-byte (32-bit) floats
 
-        vbo = self._ctx.buffer(tri_vertices)
+        vbo = self.ctx.buffer(tri_vertices)
 
-        self.vao = self._ctx.vertex_array(
-            self._shaders['tri'].inst,
+        vao = self.ctx.vertex_array(
+            self.shaders['tri'].inst,
             [
                 # in_vert needs to be first 3 floats
                 # in_colour needs to be the last 3
@@ -71,12 +80,12 @@ class Application(object):
             ]
         )
 
+        self.tri = Object(vao, 'tri')
+
     # Runs every frame - will control the render of all models
-    def render(self, frames):
-        self._ctx.clear(0.1, 0.1, 0.1)
-        tri_loc = Matrix44.from_translation(Vector3([frames/30.0,0.0,0.0]))
-        self._shaders['tri']['mvp'].write((self._cam.mv * tri_loc).astype('f4'))
-        self.vao.render()
+    def render(self, renderer):
+        self.ctx.clear(0.1, 0.1, 0.1)
+        renderer.render_object(self.tri,self.cam)
 
     # Runs every frame - will handle the logic used by the program
     def update(self):
@@ -86,38 +95,36 @@ class Application(object):
     def event_loop(self,e):
         while sdl2.SDL_PollEvent(ctypes.byref(e)) != 0:
             if e.type == sdl2.SDL_QUIT:
-                self._run = False
+                self.run = False
 
     def resize_window(self, res):
         # Changes all relevant instances of the window resolution (definately should only be one)
-        self._wdim = res
-        self._ctx.viewport = ((0,0,*res))
-        self._winst.resolution = res
-        self._cam.resize_camera(res)
+        self.wdim = res
+        self.ctx.viewport = (0,0,*res)
+        self.winst.resolution = res
+        self.cam.resize_camera(res)
 
     # Main entrypoint into the program, will contain the mainloop
     def run(self):
-        # Program initialisation
-        self.shader_init()
-        self.model_init()
-
         event = sdl2.SDL_Event()
-        frames = 0
-        self._run = True
-        while self._run:
+        self.run = True
+        while self.run:
             # Event Handling Loop
             self.event_loop(event)
 
-            self.render(frames)
+            # Update Loop
+            self.update()
+
+            # Render Loop
+            self.render(self.rnd)
 
             # Swap window buffers (make currently rendered frame visible)
-            sdl2.SDL_GL_SwapWindow(self._winst.instance)
+            sdl2.SDL_GL_SwapWindow(self.winst.instance)
 
             # Arbitrary Delay to stop excess resource usage
             sdl2.SDL_Delay(10)
-            frames += 1
 
         
         # Stop Floating Memory after program finish
-        self._ctx.release()
+        self.ctx.release()
         sdl2.SDL_Quit()
