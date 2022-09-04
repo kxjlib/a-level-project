@@ -12,6 +12,7 @@
 # Imports
 from renderer.WindowManager import GLWindow
 from renderer.bindable.ShaderProgram import ShaderProgram
+from renderer.Camera import Camera
 from pyrr import Matrix44, Vector3
 
 import numpy as np
@@ -26,6 +27,7 @@ class Application(object):
     _wdim = (800,600)
     _run = False
     _ctx = None
+    _cam = None
     _shaders = {}
 
     def __init__(self,title,dimensions):
@@ -57,10 +59,13 @@ class Application(object):
         self._ctx.enable_only(moderngl.NOTHING)
         self._ctx.enable(moderngl.DEPTH_TEST)
 
+        self._cam = Camera(dimensions, [0.0,0.0,-10.0], [0.0,0.0,1.0])
+
     
     # Loads all shader files into the program and stores them
     def shader_init(self):
-        self._shaders['tri'] = ShaderProgram.from_filename(self._ctx, pathlib.Path(__file__).parent.resolve().as_posix() + "/assets/tri")
+        self._shaders['tri'] = ShaderProgram.from_filename(self._ctx, \
+            pathlib.Path(__file__).parent.resolve().as_posix() + "/assets/tri")
     
     # Initialises all models to be used
     def model_init(self):

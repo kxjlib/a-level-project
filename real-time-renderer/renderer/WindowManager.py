@@ -3,11 +3,6 @@
 # Realtime renderer
 # WindowManager.py
 
-# Imports
-import ctypes
-import sdl2
-import sys
-
 # GLWindow Class
 
 # this class needs to:
@@ -16,6 +11,10 @@ import sys
 #   - construction of the SDL GL Context
 #   - needs to allow access to the GL Context externally
 
+# Imports
+import ctypes
+import sdl2
+import sys
 
 class GLWindow(object):
     # Variables which will be used to store window information
