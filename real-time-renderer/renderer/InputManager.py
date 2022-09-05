@@ -9,11 +9,11 @@
 class Input(object):
     Pressed = {}
     MPressed = {}
-    MPos = (0,0)
+    MPos = (0, 0)
 
     lPressed = {}
     lMPressed = {}
-    lMPos = (0,0)
+    lMPos = (0, 0)
 
     @classmethod
     def next(cls):

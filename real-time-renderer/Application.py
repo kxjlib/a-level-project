@@ -11,36 +11,36 @@
 
 # Imports
 from renderer.WindowManager import GLWindow
+from renderer.TextureManager import TextureManager
 from renderer.Camera import Camera
 from renderer.Renderer import Renderer
-from renderer.Input import Input
+from renderer.InputManager import Input
 from renderer.bindable.ShaderProgram import ShaderProgram
 from renderer.bindable.Object import Object
 
 
-from PIL import Image
-import glob
 import numpy as np
 import ctypes
 import pathlib
 import moderngl
 import sdl2
 
+
 class Application(object):
     # Variables which will be used by the class
     winst = None
-    wdim = (800,600)
+    wdim = (800, 600)
     run = False
     ctx = None
     rnd = None
     shaders = {}
     cam = None
 
-    def __init__(self,title,dimensions):
+    def __init__(self, title, dimensions):
         self.wdim = dimensions
         # We can unpack the dimensions tuple using the * prefix
         # This saves us from doing dimensions[0] and dimensions[1]
-        self.winst = GLWindow(title,*dimensions)
+        self.winst = GLWindow(title, *dimensions)
 
         # ModernGL Works by 'piggybacking' of an existing openGL context, and as such we
         # first need to create an OpenGL context in SDL before in ModernGL
@@ -52,34 +52,49 @@ class Application(object):
 
         # Program initialisation
         self.shader_init()
+        self.texture_init()
         self.model_init()
 
         self.rnd = Renderer(self.shaders)
 
         # define Camera
-        self.cam = Camera(dimensions, [0.0,0.0,-10.0], [0.0,0.0,1.0])
+        self.cam = Camera(dimensions, [0.0, 0.0, -10.0], [0.0, 0.0, 1.0])
 
     # Loads all shader files into the program and stores them
     def shader_init(self):
-        self.shaders['tri'] = ShaderProgram.from_filename(self.ctx, \
-            pathlib.Path(__file__).parent.resolve().as_posix() + "/assets/tri")
-    
+        # all Shaders (Registry Name, Filename)
+        shaders = {'texture3D': "texture3D"}
+        for k, v in shaders.items():
+            self.shaders[k] = ShaderProgram. \
+                from_filename(self.ctx,
+                              pathlib.Path(__file__)
+                              .parent.resolve()
+                              .as_posix()
+                              + f"/assets/shaders/{v}")
+
+    # Initialises all Textures
+    def texture_init(self):
+        # Registry Name : Filename(Starting at assets)
+        textures = {'start_button': ['startbutton.png',4]}
+        for k, v in textures.items():
+            TextureManager.from_image(self.ctx, v[0], k, v[1])
+
     # Initialises all models to be used
     def model_init(self):
         tri_vertices = np.array([
-            # x,y,z, rgb
-            1.0,  1.0,  0.0, -1.0, -1.0,
-            -1.0, -1.0,  0.0, 0.0, 0.0,
-            1.0, -1.0,  0.0, -1.0, 0.0,
-            -1.0, 1.0, 0.0, 0.0, -1.0,
-            1.0, 1.0,  0.0, -1.0, -1.0,
-            -1.0, -1.0,  0.0, 0.0, 0.0,
+            # x,y,z, texc
+            3.0,  1.0,  0.0, -1.0, -1.0,
+            -3.0, -1.0,  0.0, 0.0, 0.0,
+            3.0, -1.0,  0.0, -1.0, 0.0,
+            -3.0, 1.0, 0.0, 0.0, -1.0,
+            3.0, 1.0,  0.0, -1.0, -1.0,
+            -3.0, -1.0,  0.0, 0.0, 0.0,
         ], dtype='f4')  # Use 4-byte (32-bit) floats
 
         vbo = self.ctx.buffer(tri_vertices)
 
         vao = self.ctx.vertex_array(
-            self.shaders['tri'].inst,
+            self.shaders['texture3D'].inst,
             [
                 # in_vert needs to be first 3 floats
                 # in_colour needs to be the last 3
@@ -87,38 +102,31 @@ class Application(object):
             ]
         )
 
-        self.tri = Object(vao, 'tri')
-
-        img = Image.open(pathlib.Path(__file__).parent.resolve().as_posix() + "/assets/test.jpg")
-
-        texture = self.ctx.texture((375,375),3,img.tobytes())
-        texture.use()
+        self.tri = Object(vao, 'texture3D')
 
     # Runs every frame - will control the render of all models
     def render(self, renderer):
         self.ctx.clear(0.1, 0.1, 0.1)
-        renderer.render_object(self.tri,self.cam)
+        renderer.render_object(self.tri, self.cam)
 
     # Runs every frame - will handle the logic used by the program
     def update(self):
-        
-        self.tri.move([0.0,0.001,0.0])
         pass
 
     # Will handle all window events every frame
-    def event_loop(self,e):
+    def event_loop(self, e):
         while sdl2.SDL_PollEvent(ctypes.byref(e)) != 0:
             Input.next()
             if e.type == sdl2.SDL_QUIT:
                 self.run = False
                 return
-            
+
             if e.type == sdl2.SDL_KEYDOWN:
                 Input.Pressed[e.key.keysym.sym] = True
             elif e.type == sdl2.SDL_KEYUP:
                 Input.Pressed[e.key.keysym.sym] = False
             elif e.type == sdl2.SDL_MOUSEMOTION:
-                mPos = [e.motion.x,e.motion.y]
+                mPos = [e.motion.x, e.motion.y]
                 Input.MPos = mPos
             elif e.type == sdl2.SDL_MOUSEBUTTONDOWN:
                 Input.MPressed[e.button.button] = True
@@ -128,12 +136,13 @@ class Application(object):
     def resize_window(self, res):
         # Changes all relevant instances of the window resolution (definately should only be one)
         self.wdim = res
-        self.ctx.viewport = (0,0,*res)
+        self.ctx.viewport = (0, 0, *res)
         self.winst.resolution = res
         self.cam.resize_camera(res)
 
     # Main entrypoint into the program, will contain the mainloop
     def run(self):
+        TextureManager.use("start_button")
         event = sdl2.SDL_Event()
         self.run = True
         while self.run:
@@ -152,7 +161,6 @@ class Application(object):
             # Arbitrary Delay to stop excess resource usage
             sdl2.SDL_Delay(10)
 
-        
         # Stop Floating Memory after program finish
         self.ctx.release()
         sdl2.SDL_Quit()

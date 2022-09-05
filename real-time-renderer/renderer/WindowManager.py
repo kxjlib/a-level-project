@@ -16,6 +16,7 @@ import ctypes
 import sdl2
 import sys
 
+
 class GLWindow(object):
     # Variables which will be used to store window information
     _winstance = None

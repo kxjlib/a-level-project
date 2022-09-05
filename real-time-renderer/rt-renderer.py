@@ -12,5 +12,5 @@ from Application import Application
 if __name__ != "__main__":
     sys.exit(-1)
 
-app = Application("Real-Time Renderer", (1200,900))
+app = Application("Real-Time Renderer", (800, 600))
 app.run()
