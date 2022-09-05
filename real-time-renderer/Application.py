@@ -13,9 +13,13 @@
 from renderer.WindowManager import GLWindow
 from renderer.Camera import Camera
 from renderer.Renderer import Renderer
+from renderer.Input import Input
 from renderer.bindable.ShaderProgram import ShaderProgram
 from renderer.bindable.Object import Object
 
+
+from PIL import Image
+import glob
 import numpy as np
 import ctypes
 import pathlib
@@ -64,9 +68,12 @@ class Application(object):
     def model_init(self):
         tri_vertices = np.array([
             # x,y,z, rgb
-            0.0,  1.0,  0.0, 1.0, 0.0, 0.0,
-            -1.0, -1.0,  0.0, 0.0, 1.0, 0.0,
-            1.0, -1.0,  0.0, 0.0, 0.0, 1.0,
+            1.0,  1.0,  0.0, -1.0, -1.0,
+            -1.0, -1.0,  0.0, 0.0, 0.0,
+            1.0, -1.0,  0.0, -1.0, 0.0,
+            -1.0, 1.0, 0.0, 0.0, -1.0,
+            1.0, 1.0,  0.0, -1.0, -1.0,
+            -1.0, -1.0,  0.0, 0.0, 0.0,
         ], dtype='f4')  # Use 4-byte (32-bit) floats
 
         vbo = self.ctx.buffer(tri_vertices)
@@ -76,11 +83,16 @@ class Application(object):
             [
                 # in_vert needs to be first 3 floats
                 # in_colour needs to be the last 3
-                (vbo, '3f 3f', 'in_vert', 'in_colour')
+                (vbo, '3f 2f', 'in_vert', 'in_text')
             ]
         )
 
         self.tri = Object(vao, 'tri')
+
+        img = Image.open(pathlib.Path(__file__).parent.resolve().as_posix() + "/assets/test.jpg")
+
+        texture = self.ctx.texture((375,375),3,img.tobytes())
+        texture.use()
 
     # Runs every frame - will control the render of all models
     def render(self, renderer):
@@ -89,13 +101,29 @@ class Application(object):
 
     # Runs every frame - will handle the logic used by the program
     def update(self):
+        
+        self.tri.move([0.0,0.001,0.0])
         pass
 
     # Will handle all window events every frame
     def event_loop(self,e):
         while sdl2.SDL_PollEvent(ctypes.byref(e)) != 0:
+            Input.next()
             if e.type == sdl2.SDL_QUIT:
                 self.run = False
+                return
+            
+            if e.type == sdl2.SDL_KEYDOWN:
+                Input.Pressed[e.key.keysym.sym] = True
+            elif e.type == sdl2.SDL_KEYUP:
+                Input.Pressed[e.key.keysym.sym] = False
+            elif e.type == sdl2.SDL_MOUSEMOTION:
+                mPos = [e.motion.x,e.motion.y]
+                Input.MPos = mPos
+            elif e.type == sdl2.SDL_MOUSEBUTTONDOWN:
+                Input.MPressed[e.button.button] = True
+            elif e.type == sdl2.SDL_MOUSEBUTTONUP:
+                Input.MPressed[e.button.button] = False
 
     def resize_window(self, res):
         # Changes all relevant instances of the window resolution (definately should only be one)

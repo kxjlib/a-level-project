@@ -25,15 +25,10 @@ class ShaderProgram(object):
         frag_source = ""
         with open(filename + '.frag', 'r') as fs:
             frag_source = fs.read()
-
-        # SEARCH FOR UNIFORM VARIABLES
-        vert_src_list = vert_source.replace(";", "").split()
-        uniforms_indices = [i for i, _ in enumerate(vert_src_list) if _ == "uniform"] # this line will store all locations where uniform appears
-        uniforms = [vert_src_list[i+2] for i in uniforms_indices] # this gets 2 words after the uniform declaration (the name of the uniform)
         
-        return cls(gl_ctx, vert_source, frag_source, uniforms)
+        return cls(gl_ctx, vert_source, frag_source)
     
-    def __init__(self, gl_ctx, vert_src, frag_src, uniforms=None):
+    def __init__(self, gl_ctx, vert_src, frag_src):
         # Create the Shader Program.
         self._program = gl_ctx.program(vertex_shader=vert_src,fragment_shader=frag_src)
 

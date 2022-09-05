@@ -3,11 +3,11 @@
 uniform mat4 mvp;
 
 in vec3 in_vert;
+in vec2 in_text;
 
-in vec3 in_colour;
-out vec3 v_colour; // To Fragment Shader
+out vec2 v_texture;
 
 void main() {
     gl_Position = mvp * vec4(in_vert,1.0);
-    v_colour = in_colour;
+    v_texture = in_text;
 }
