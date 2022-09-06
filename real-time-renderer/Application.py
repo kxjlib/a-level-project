@@ -18,6 +18,7 @@ from renderer.bindable.ShaderProgram import ShaderProgram
 from renderer.bindable.Object import Object
 from renderer.ShaderManager import ShaderManager
 
+from impl.InformationManager import Info
 from impl.InputManager import Input
 
 # States
@@ -31,7 +32,6 @@ import sdl2
 class Application(object):
     # Variables which will be used by the class
     winst = None
-    wdim = (800, 600)
     run = False
     ctx = None
     rnd = None
@@ -41,7 +41,7 @@ class Application(object):
     current_state = ""
 
     def __init__(self, title, dimensions):
-        self.wdim = dimensions
+        Info.scr_size = dimensions
         # We can unpack the dimensions tuple using the * prefix
         # This saves us from doing dimensions[0] and dimensions[1]
         self.winst = GLWindow(title, *dimensions)
@@ -52,7 +52,7 @@ class Application(object):
 
         # set OpenGL Settings
         self.ctx.enable_only(moderngl.NOTHING)
-        self.ctx.enable(moderngl.DEPTH_TEST)
+        self.ctx.enable(moderngl.DEPTH_TEST | moderngl.BLEND)
 
         # Program initialisation
         self.shader_init()
@@ -80,9 +80,10 @@ class Application(object):
     # Initialises all Textures
     def texture_init(self):
         # Registry Name : Filename(Starting at assets)
-        textures = {'start_button': ['startbutton.png', 4]}
+        textures = {'start_button': 'startbutton.png',
+                    'settings_icon': 'settingsicon.png'}
         for k, v in textures.items():
-            TextureManager.from_image(self.ctx, v[0], k, v[1])
+            TextureManager.from_image(self.ctx, v, k)
 
     # Will handle all window events every frame
     def event_loop(self, e):
@@ -106,14 +107,13 @@ class Application(object):
 
     def resize_window(self, res):
         # Changes all relevant instances of the window resolution (definately should only be one)
-        self.wdim = res
         self.ctx.viewport = (0, 0, *res)
         self.winst.resolution = res
         self.cam.resize_camera(res)
+        Info.set_scr_size(res)
 
     # Main entrypoint into the program, will contain the mainloop
     def run(self):
-        TextureManager.use("start_button")
         event = sdl2.SDL_Event()
         self.run = True
         while self.run:

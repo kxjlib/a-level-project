@@ -6,6 +6,8 @@
 # The input class needs to:
 #   - Store all pressed keys
 
+from impl.InformationManager import Info
+
 class Input(object):
     Pressed = {}
     MPressed = {}
@@ -22,8 +24,8 @@ class Input(object):
         cls.lMPos = cls.MPos
 
     @classmethod
-    def mouse_to_screen(cls, scr_dimensions):
+    def mouse_to_screen(cls):
         # Maps an x,y coordinate to its relative location on the screen
-        mouse_adj = [(2 * cls.MPos[i])/scr_dimensions[i] - 1 for i in range(2)]
-        print(mouse_adj)
+        mouse_adj = [(2 * cls.MPos[i])/Info.scr_size[i] - 1 for i in range(2)]
+        mouse_adj[1] = -mouse_adj[1]
         return mouse_adj

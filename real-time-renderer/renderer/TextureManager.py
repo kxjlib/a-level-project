@@ -19,11 +19,11 @@ class TextureManager(object):
 
 
     @classmethod
-    def from_image(cls, ctx, filename, regname, channels):
+    def from_image(cls, ctx, filename, regname):
         img = Image.open(pathlib.Path(
-            __file__).parent.resolve().as_posix() + f"/../assets/{filename}")
+            __file__).parent.resolve().as_posix() + f"/../assets/{filename}").convert('RGBA')
         
-        tex = ctx.texture(img.size, channels, img.tobytes())
+        tex = ctx.texture(img.size, 4, img.tobytes())
 
         cls.Textures[regname] = tex
     
