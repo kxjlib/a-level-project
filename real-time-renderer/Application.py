@@ -14,14 +14,16 @@ from renderer.WindowManager import GLWindow
 from renderer.TextureManager import TextureManager
 from renderer.Camera import Camera
 from renderer.Renderer import Renderer
-from renderer.InputManager import Input
 from renderer.bindable.ShaderProgram import ShaderProgram
 from renderer.bindable.Object import Object
+from renderer.ShaderManager import ShaderManager
 
+from impl.InputManager import Input
 
-import numpy as np
+# States
+from impl.states.MainMenu import MainMenu
+
 import ctypes
-import pathlib
 import moderngl
 import sdl2
 
@@ -35,6 +37,8 @@ class Application(object):
     rnd = None
     shaders = {}
     cam = None
+    app_states = {}
+    current_state = ""
 
     def __init__(self, title, dimensions):
         self.wdim = dimensions
@@ -53,7 +57,12 @@ class Application(object):
         # Program initialisation
         self.shader_init()
         self.texture_init()
-        self.model_init()
+
+        # Initialise States
+        self.app_states = {
+            "main_menu" : MainMenu(self.ctx)
+        }
+        self.current_state = "main_menu"
 
         self.rnd = Renderer(self.shaders)
 
@@ -63,60 +72,22 @@ class Application(object):
     # Loads all shader files into the program and stores them
     def shader_init(self):
         # all Shaders (Registry Name, Filename)
-        shaders = {'texture3D': "texture3D"}
-        for k, v in shaders.items():
-            self.shaders[k] = ShaderProgram. \
-                from_filename(self.ctx,
-                              pathlib.Path(__file__)
-                              .parent.resolve()
-                              .as_posix()
-                              + f"/assets/shaders/{v}")
+        shaders = {'texture3D': "texture3D",
+                   'UI2D': "UI2D"}
+        
+        ShaderManager.from_dict(self.ctx,shaders)
 
     # Initialises all Textures
     def texture_init(self):
         # Registry Name : Filename(Starting at assets)
-        textures = {'start_button': ['startbutton.png',4]}
+        textures = {'start_button': ['startbutton.png', 4]}
         for k, v in textures.items():
             TextureManager.from_image(self.ctx, v[0], k, v[1])
 
-    # Initialises all models to be used
-    def model_init(self):
-        tri_vertices = np.array([
-            # x,y,z, texc
-            3.0,  1.0,  0.0, -1.0, -1.0,
-            -3.0, -1.0,  0.0, 0.0, 0.0,
-            3.0, -1.0,  0.0, -1.0, 0.0,
-            -3.0, 1.0, 0.0, 0.0, -1.0,
-            3.0, 1.0,  0.0, -1.0, -1.0,
-            -3.0, -1.0,  0.0, 0.0, 0.0,
-        ], dtype='f4')  # Use 4-byte (32-bit) floats
-
-        vbo = self.ctx.buffer(tri_vertices)
-
-        vao = self.ctx.vertex_array(
-            self.shaders['texture3D'].inst,
-            [
-                # in_vert needs to be first 3 floats
-                # in_colour needs to be the last 3
-                (vbo, '3f 2f', 'in_vert', 'in_text')
-            ]
-        )
-
-        self.tri = Object(vao, 'texture3D')
-
-    # Runs every frame - will control the render of all models
-    def render(self, renderer):
-        self.ctx.clear(0.1, 0.1, 0.1)
-        renderer.render_object(self.tri, self.cam)
-
-    # Runs every frame - will handle the logic used by the program
-    def update(self):
-        pass
-
     # Will handle all window events every frame
     def event_loop(self, e):
+        Input.next()
         while sdl2.SDL_PollEvent(ctypes.byref(e)) != 0:
-            Input.next()
             if e.type == sdl2.SDL_QUIT:
                 self.run = False
                 return
@@ -149,11 +120,9 @@ class Application(object):
             # Event Handling Loop
             self.event_loop(event)
 
-            # Update Loop
-            self.update()
-
-            # Render Loop
-            self.render(self.rnd)
+            # State Machine update and render
+            self.app_states[self.current_state].update()
+            self.app_states[self.current_state].render(self.ctx, self.rnd, self.cam)
 
             # Swap window buffers (make currently rendered frame visible)
             sdl2.SDL_GL_SwapWindow(self.winst.instance)

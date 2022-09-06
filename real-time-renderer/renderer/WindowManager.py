@@ -21,7 +21,7 @@ class GLWindow(object):
     # Variables which will be used to store window information
     _winstance = None
     _sdlctx = None
-    _dimensions = (800, 600)
+    _dimensions = (1280, 720)
     _title = "OpenGL Window"
 
     def __init__(self, title: str, width: int, height: int):

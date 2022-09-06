@@ -28,3 +28,6 @@ class Renderer(object):
         self._shaders[obj.shaderid]['mvp'].write(
             (camera.mv * mat_transform).astype('f4'))
         obj.vao.render()
+    
+    def render_ui(self, obj: Object):
+        obj.vao.render()
