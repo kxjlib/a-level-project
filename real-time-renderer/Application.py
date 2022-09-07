@@ -23,6 +23,7 @@ from impl.InputManager import Input
 
 # States
 from impl.states.MainMenu import MainMenu
+from impl.states.Settings import Settings
 
 import ctypes
 import moderngl
@@ -60,9 +61,10 @@ class Application(object):
 
         # Initialise States
         self.app_states = {
-            "main_menu" : MainMenu(self.ctx)
+            "main_menu" : MainMenu(self.ctx),
+            "settings_menu" : Settings(self.ctx)
         }
-        self.current_state = "main_menu"
+        Info.current_screen = "main_menu"
 
         self.rnd = Renderer(self.shaders)
 
@@ -121,8 +123,8 @@ class Application(object):
             self.event_loop(event)
 
             # State Machine update and render
-            self.app_states[self.current_state].update()
-            self.app_states[self.current_state].render(self.ctx, self.rnd, self.cam)
+            self.app_states[Info.current_screen].update()
+            self.app_states[Info.current_screen].render(self.ctx, self.rnd, self.cam)
 
             # Swap window buffers (make currently rendered frame visible)
             sdl2.SDL_GL_SwapWindow(self.winst.instance)

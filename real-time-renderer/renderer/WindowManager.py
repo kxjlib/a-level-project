@@ -14,6 +14,7 @@
 # Imports
 import ctypes
 import sdl2
+import sdl2.sdlttf
 import sys
 
 
@@ -34,6 +35,9 @@ class GLWindow(object):
         if sdl2.SDL_Init(sdl2.SDL_INIT_VIDEO) != 0:
             print(f"[ERROR] SDL2 Initialisation : {sdl2.SDL_GetError()}")
             sys.exit(-1)
+
+        sdl2.sdlttf.TTF_Init()
+
 
         # Create Instance of SDL Window, and store in _winstance variable.
         self._winstance = \
