@@ -64,7 +64,7 @@ class Settings(State):
                 self.res_buttons[k].active = not self.res_buttons[k].active
             loc = clicked.index(True)
             new_text = self.res_buttons[list(self.res_buttons.keys())[loc]].contents
-
+            del self.text['ff_settings_res_value']
             self.text['ff_settings_res_value'] = Text(
                 gl_ctx, new_text, (255, 255, 255), 48, "ff_settings_res_val_tex", -0.58, 0.2)
             new_res = [int(i) for i in new_text.split("x")]

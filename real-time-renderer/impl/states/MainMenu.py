@@ -16,6 +16,7 @@ import moderngl
 class MainMenu(State):
     buttons = {}
     text = {}
+    other = False
 
     def __init__(self, gl_ctx: moderngl.Context):
         super().__init__(gl_ctx)

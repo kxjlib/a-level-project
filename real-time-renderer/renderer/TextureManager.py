@@ -24,9 +24,15 @@ class TextureManager(object):
             __file__).parent.resolve().as_posix() + f"/../assets/{filename}").convert('RGBA')
         
         tex = ctx.texture(img.size, 4, img.tobytes())
-
-        cls.Textures[regname] = tex
+        cls.from_tex(tex, regname)
     
+    @classmethod
+    def from_tex(cls, tex, regname):
+        if cls.Textures.get(regname):
+            cls.Textures[regname].release()
+        cls.Textures[regname] = tex
+
+
     # Only change the texture if it is necessary
     @classmethod
     def use(cls, tex_name):

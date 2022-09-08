@@ -45,7 +45,7 @@ class Text(object):
         pixels = sdl2.ext.surface_to_ndarray(surface)
 
         tex = gl_ctx.texture((surf.w, surf.h), 4, pixels)
-        TextureManager.Textures[text_name] = tex
+        TextureManager.from_tex(tex, text_name)
 
         width = surf.w / Info.scr_size[0]
         height = surf.h / Info.scr_size[1]
@@ -77,6 +77,8 @@ class Text(object):
             ],
             index_buffer=ebo
         )
+
+        sdl2.SDL_FreeSurface(surface)
 
     def render(self):
         if not self.active:
