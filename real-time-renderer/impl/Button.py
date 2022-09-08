@@ -9,6 +9,7 @@ import moderngl
 from renderer.ShaderManager import ShaderManager
 from renderer.TextureManager import TextureManager
 from impl.InputManager import Input
+from impl.Text import Text
 
 
 class Button(object):
@@ -18,6 +19,7 @@ class Button(object):
     size = [0, 0]
     pos = [0, 0]
     active = True
+
 
     def __init__(self, gl_ctx: moderngl.Context, texture_id, width, height, x, y):
         self.size = [width, height]

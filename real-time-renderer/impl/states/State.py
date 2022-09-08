@@ -26,7 +26,7 @@ class State(metaclass=ABCMeta):
         pass
     
     @abstractmethod
-    def update(self):
+    def update(self, gl_ctx: moderngl.Context):
         pass
     
     @abstractmethod

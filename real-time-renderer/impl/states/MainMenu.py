@@ -21,7 +21,8 @@ class MainMenu(State):
         super().__init__(gl_ctx)
 
     def model_init(self, gl_ctx: moderngl.Context):
-        self.text['ff_name'] = Text(gl_ctx, "Flight Fidelity", (256,256,256), 16, "ff_name_tex", 0, 0)
+        self.text['ff_name'] = Text(
+            gl_ctx, "Flight Fidelity", (255, 255, 255), 200, "ff_menu_name_tex", 0, 0.7)
 
         self.buttons['start'] = Button(
             gl_ctx, "start_button", 0.3, 0.1 * Info.aspect_ratio, 0, -0.6)
@@ -29,7 +30,7 @@ class MainMenu(State):
         self.buttons['settings'] = Button(
             gl_ctx, "settings_icon", 0.1, 0.1 * Info.aspect_ratio, 0.9, 1 - (0.1 * Info.aspect_ratio))
 
-    def update(self):
+    def update(self,gl_ctx: moderngl.Context =None):
         if self.buttons['start'].is_clicked():
             print("start")
         if self.buttons['settings'].is_clicked():

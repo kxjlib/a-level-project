@@ -12,7 +12,7 @@
 import moderngl
 import sdl2
 import sdl2.sdlttf
-import ctypes
+import sdl2.ext
 import pathlib
 from renderer.ShaderManager import ShaderManager
 from impl.InformationManager import Info
@@ -24,6 +24,8 @@ class Text(object):
     contents = ""
     text_name = ""
     pos = [0, 0]
+    active = True
+    size = (0,0)
 
     def __init__(self, gl_ctx: moderngl.Context, contents, colour, size, text_name, x, y):
         self.contents = contents
@@ -31,7 +33,7 @@ class Text(object):
         self.pos = (x, y)
 
         font = sdl2.sdlttf.TTF_OpenFont((pathlib.Path(
-            __file__).parent.resolve().as_posix() + f"/../assets/calibri.ttf").encode(), 64)
+            __file__).parent.resolve().as_posix() + f"/../assets/calibri.ttf").encode(), size)
 
         surface = sdl2.sdlttf.TTF_RenderText_Blended(
             font, contents.encode(), sdl2.SDL_Color(*colour))
@@ -40,17 +42,15 @@ class Text(object):
 
         surf = surface.contents
 
-        pixels = ctypes.cast(surf.pixels, ctypes.POINTER(
-            ctypes.c_uint32*(surf.w*surf.h)))
-        print(f"{surf.w},{surf.h}")
-        total = 0
-        print(pixels.contents)
+        pixels = sdl2.ext.surface_to_ndarray(surface)
 
-        tex = gl_ctx.texture((surf.w, surf.h), 4, bytes(pixels.contents))
+        tex = gl_ctx.texture((surf.w, surf.h), 4, pixels)
         TextureManager.Textures[text_name] = tex
 
         width = surf.w / Info.scr_size[0]
         height = surf.h / Info.scr_size[1]
+
+        self.size = (width,height)
 
         vertices = np.array([
             # x,y texc
@@ -79,5 +79,7 @@ class Text(object):
         )
 
     def render(self):
+        if not self.active:
+            return
         TextureManager.use(self.text_name)
         self.vao.render()

@@ -83,7 +83,8 @@ class Application(object):
     def texture_init(self):
         # Registry Name : Filename(Starting at assets)
         textures = {'start_button': 'startbutton.png',
-                    'settings_icon': 'settingsicon.png'}
+                    'settings_icon': 'settingsicon.png',
+                    'dropdown_icon': 'dropdown.png'}
         for k, v in textures.items():
             TextureManager.from_image(self.ctx, v, k)
 
@@ -118,19 +119,25 @@ class Application(object):
     def run(self):
         event = sdl2.SDL_Event()
         self.run = True
+        frames = 0
         while self.run:
             # Event Handling Loop
             self.event_loop(event)
 
             # State Machine update and render
-            self.app_states[Info.current_screen].update()
+            self.app_states[Info.current_screen].update(self.ctx)
             self.app_states[Info.current_screen].render(self.ctx, self.rnd, self.cam)
+
+            if Info.new_res:
+                self.resize_window(Info.new_res)
+                Info.new_res = None
 
             # Swap window buffers (make currently rendered frame visible)
             sdl2.SDL_GL_SwapWindow(self.winst.instance)
 
             # Arbitrary Delay to stop excess resource usage
             sdl2.SDL_Delay(10)
+            frames += 1
 
         # Stop Floating Memory after program finish
         self.ctx.release()

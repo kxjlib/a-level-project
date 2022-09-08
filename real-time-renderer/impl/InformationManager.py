@@ -9,6 +9,7 @@ class Info(object):
     scr_size = [1280, 720]
     aspect_ratio = scr_size[0] / scr_size[1]
     current_screen = "main_menu"
+    new_res = None
 
     @classmethod
     def set_scr_size(cls, value):
