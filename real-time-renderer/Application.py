@@ -82,7 +82,7 @@ class Application(object):
     # Initialises all Textures
     def texture_init(self):
         # Registry Name : Filename(Starting at assets)
-        textures = {'start_button': 'startbutton.png',
+        textures = {'button': 'button.png',
                     'settings_icon': 'settingsicon.png',
                     'dropdown_icon': 'dropdown.png'}
         for k, v in textures.items():
@@ -118,11 +118,31 @@ class Application(object):
     # Main entrypoint into the program, will contain the mainloop
     def run(self):
         event = sdl2.SDL_Event()
+        f = 0
         self.run = True
-        frames = 0
+        last_time_cap = sdl2.SDL_GetTicks()
+        last_time_measure = sdl2.SDL_GetTicks()
         while self.run:
+            # Lock FPS to 60
+            new_time = sdl2.SDL_GetTicks()
+            dtc = new_time - last_time_cap
+            if dtc >= 1000/60.0:
+                last_time_cap = new_time
+            else:
+                continue
+
+            # FPS Counter
+            f+= 1
+            dtm = new_time - last_time_measure
+            if dtm >= 1000:
+                print(f"\rFPS: {f}", end="")
+                f=0
+                last_time_measure = new_time
+                
+
             # Event Handling Loop
             self.event_loop(event)
+
 
             # State Machine update and render
             self.app_states[Info.current_screen].update(self.ctx)
@@ -134,10 +154,6 @@ class Application(object):
 
             # Swap window buffers (make currently rendered frame visible)
             sdl2.SDL_GL_SwapWindow(self.winst.instance)
-
-            # Arbitrary Delay to stop excess resource usage
-            sdl2.SDL_Delay(10)
-            frames += 1
 
         # Stop Floating Memory after program finish
         self.ctx.release()

@@ -19,12 +19,16 @@ class Button(object):
     size = [0, 0]
     pos = [0, 0]
     active = True
+    text = None
 
 
-    def __init__(self, gl_ctx: moderngl.Context, texture_id, width, height, x, y):
+    def __init__(self, gl_ctx: moderngl.Context, texture_id, width, height, x, y, text=None, text_colour=None):
         self.size = [width, height]
         self.pos = [x, y]
         self.tex_id = texture_id
+
+        if text:
+            self.text = Text(gl_ctx, text, text_colour, int(height*550), f"ag_txt_{text[0:min(4,len(text)-1)]}",x,y)
 
         self.create_vao(gl_ctx)
 
@@ -71,3 +75,5 @@ class Button(object):
             return
         TextureManager.use(self.tex_id)
         self.vao.render()
+        if self.text:
+            self.text.render()
