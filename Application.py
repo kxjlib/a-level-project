@@ -134,7 +134,7 @@ class Application(object):
             f += 1
             dtm = new_time - last_time_measure
             if dtm >= 1000:
-                print(f"\rFPS: {f}", end="")
+                print(f"FPS: {f}")
                 f = 0
                 last_time_measure = new_time
 

@@ -11,6 +11,7 @@ from ..impl.Text import Text
 from ..impl.InformationManager import Info
 from ..renderer.Renderer import Renderer
 from ..renderer.Camera import Camera
+from ..modelan.Mesh3D import Mesh3D
 
 import moderngl
 from win32 import win32gui
@@ -47,7 +48,7 @@ class ModelMenu(State):
 
     def update(self, gl_ctx: moderngl.Context = None):
         if self.buttons['start'].is_clicked():
-            print("start")
+            self.begin_analysis()
         if self.buttons['mod_select'].is_clicked():
             self.sfile_name = self.file_prompt()
             self.text['ff_filename'] = Text(
@@ -69,20 +70,8 @@ class ModelMenu(State):
     def render(self, gl_ctx: moderngl.Context, renderer: Renderer, camera: Camera):
         gl_ctx.clear(0.1, 0.1, 0.1)
         self.render_ui(gl_ctx)
-
-
-# File open routine
-# Inputs a filename from parameters and loads it from the hard drive
-# Converts it into a Object File and returns it.
-
-def fileOpenRoutine(filename):
-    pass
-
-# Calculate Centre of Mass Function
-# Inputs an array of 3 vertices, all on a 2d plane
-# Calculates the centroid of the triangle - the centre of mass
-# Also calculates the area of the triangle, which will be useful for the simulation
-# It returns the centroid and the area
-
-def triangleBreakdown(vertexArray, density):
-    pass
+    
+    def begin_analysis(self):
+        mesh = Mesh3D(self.sfile_name)
+        print(f"Mesh Volume: {mesh.volume}M^3")
+        print(f"Mesh Weight: {mesh.weight}N")

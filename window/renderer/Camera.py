@@ -8,7 +8,9 @@
 #   - Calculate a new view matrix based on a change in resolution
 
 # Imports
+from asyncio.windows_events import NULL
 from pyrr import Matrix44, Vector3
+import sys
 
 
 class Camera(object):
@@ -55,7 +57,7 @@ class Camera(object):
     # Moves The Camera
     def move(self, dpos):
         self.create_loc_mat([p+d for p, d in zip(self._pos, dpos)], self._dir)
-
+        
     @property
     def mv(self):
         return self._proj_mat * self._loc_mat
