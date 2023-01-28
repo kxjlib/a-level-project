@@ -75,3 +75,5 @@ class ModelMenu(State):
         mesh = Mesh3D(self.sfile_name)
         print(f"Mesh Volume: {mesh.volume}M^3")
         print(f"Mesh Weight: {mesh.weight}N")
+        mesh.calc_underside_area()
+        print(f"Underside Area: {mesh.calc_underside_area()}")
