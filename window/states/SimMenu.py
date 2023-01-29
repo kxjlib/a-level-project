@@ -16,6 +16,7 @@ from win32 import win32gui
 import win32con
 import os
 
+
 class SimMenu(State):
     buttons = {}
     text = {}
@@ -25,22 +26,32 @@ class SimMenu(State):
     def __init__(self, gl_ctx: moderngl.Context):
         super().__init__(gl_ctx)
         self.simulation_began = False
+        self.f_passed = 0
 
     def model_init(self, gl_ctx: moderngl.Context):
         self.text['sm_name'] = Text(
             gl_ctx, "Physics Simulation", (255, 255, 255), 200, "sm_menu_main_text", 0, 0.7)
-        
+
+        self.pos_text = Text(
+            gl_ctx, "X= , Y= ", (255, 255, 255), 50, "sm_pos_text", -0.4, -0.6
+        )
+
         self.buttons['start'] = Button(
             gl_ctx, "button", 0.3, 0.1 * Info.aspect_ratio, 0, -0.6, "Start", (0, 0, 0))
         self.buttons['sim_select'] = Button(
-            gl_ctx, "button", 0.4, 0.1 * Info.aspect_ratio, 0, 0.3, "Select File", (0,0,0)
+            gl_ctx, "button", 0.4, 0.1 *
+            Info.aspect_ratio, 0, 0.3, "Select File", (0, 0, 0)
+        )
+        self.buttons['go_back'] = Button(
+            gl_ctx, "button", 0.3, 0.1 * Info.aspect_ratio, -
+            0.8, -0.8, "Go Back", (0, 0, 0)
         )
 
     def file_prompt(self):
         prompt_res = win32gui.GetOpenFileNameW(
             InitialDir=os.environ['temp'],
-            Flags = win32con.OFN_EXPLORER,
-            Title= "Select a Model File",
+            Flags=win32con.OFN_EXPLORER,
+            Title="Select a Model File",
             DefExt="bin"
         )
         return prompt_res[0]
@@ -54,6 +65,20 @@ class SimMenu(State):
             self.sfile_name = self.file_prompt()
             self.text['ff_filename'] = Text(
                 gl_ctx, self.sfile_name, (255, 255, 255), 50, "ff_menu_filename", 0, 0.15)
+
+        if self.buttons['go_back'].is_clicked():
+            Info.current_screen = "main_menu"
+
+        if self.simulation_began:
+            self.f_passed += 1
+            if self.f_passed == 6:
+                self.phys_handler.update()
+                self.phys_handler.render_model.pos = [
+                    (self.phys_handler.pos[0]) - 6, (self.phys_handler.pos[1] * 0.8)-0.7, -1]
+
+                print(f"X={self.phys_handler.pos[0]}, Y={self.phys_handler.pos[1]}")
+
+                self.f_passed = 0
 
     def render_ui(self, gl_ctx: moderngl.Context):
         gl_ctx.disable(moderngl.DEPTH_TEST)
@@ -70,7 +95,7 @@ class SimMenu(State):
 
     def render(self, gl_ctx: moderngl.Context, renderer: Renderer, camera: Camera):
         gl_ctx.clear(0.1, 0.1, 0.1)
-        
+
         if not self.simulation_began:
             self.render_ui(gl_ctx)
 

@@ -39,6 +39,11 @@ class ModelMenu(State):
             gl_ctx, "button", 0.4, 0.1 * Info.aspect_ratio, 0, 0.3, "Select File", (0,0,0)
         )
 
+        self.buttons['go_back'] = Button(
+            gl_ctx, "button", 0.3, 0.1 * Info.aspect_ratio, -
+            0.8, -0.8, "Go Back", (0, 0, 0)
+        )
+
     def file_prompt(self):
         prompt_res = win32gui.GetOpenFileNameW(
             InitialDir=os.environ['temp'],
@@ -55,6 +60,8 @@ class ModelMenu(State):
             self.sfile_name = self.file_prompt()
             self.text['ff_filename'] = Text(
                 gl_ctx, self.sfile_name, (255, 255, 255), 50, "ff_msel_filename", 0, 0.15)
+        if self.buttons['go_back'].is_clicked():
+            Info.current_screen = "main_menu"
 
     def render_ui(self, gl_ctx: moderngl.Context):
         gl_ctx.disable(moderngl.DEPTH_TEST)
@@ -83,13 +90,15 @@ class ModelMenu(State):
         m_volume = mesh.volume
         m_weight = mesh.weight
         m_uarea = mesh.calc_underside_area()
+        m_wspan = mesh.horiz_area_of_model()[1]
 
         # Create Dictionary to be stored to disk
         save_data = {
             "volume": m_volume,
             "weight": m_weight,
             "u_area": m_uarea,
-            "m_file": self.sfile_name
+            "m_file": self.sfile_name,
+            "w_span": m_wspan
         }
 
         filename_list = self.sfile_name.split("\\")

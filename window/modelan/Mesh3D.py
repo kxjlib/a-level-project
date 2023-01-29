@@ -71,7 +71,7 @@ class Mesh3D:
         width = max_w - min_w
         depth = max_d - min_d
 
-        return width * depth
+        return width * depth, max(width,depth)
 
     # CALCULATE WING AREA
 
@@ -136,7 +136,7 @@ class Mesh3D:
 
         ratio = w*h/num_of_n_blk
 
-        underside_area = self.horiz_area_of_model() * ratio
+        underside_area = self.horiz_area_of_model()[0] * ratio
 
         ctx.release()
 
