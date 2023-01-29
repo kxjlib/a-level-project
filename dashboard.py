@@ -1,7 +1,7 @@
 # William Davies
 # "Flight Fidelity" Project
 # Realtime renderer
-# main.py
+# dashboard.py
 
 # Imports
 import sys
