@@ -138,4 +138,6 @@ class Mesh3D:
 
         underside_area = self.horiz_area_of_model() * ratio
 
+        ctx.release()
+
         return underside_area

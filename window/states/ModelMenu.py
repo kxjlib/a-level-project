@@ -18,6 +18,8 @@ from win32 import win32gui
 import win32con
 import os
 
+import pickle
+
 class ModelMenu(State):
     buttons = {}
     text = {}
@@ -73,7 +75,22 @@ class ModelMenu(State):
     
     def begin_analysis(self):
         mesh = Mesh3D(self.sfile_name)
-        print(f"Mesh Volume: {mesh.volume}M^3")
-        print(f"Mesh Weight: {mesh.weight}N")
-        mesh.calc_underside_area()
-        print(f"Underside Area: {mesh.calc_underside_area()}")
+
+        m_volume = mesh.volume
+        m_weight = mesh.weight
+        m_uarea = mesh.calc_underside_area()
+
+        # Create Dictionary to be stored to disk
+        save_data = {
+            "volume": m_volume,
+            "weight": m_weight,
+            "u_area": m_uarea
+        }
+
+        filename_list = self.sfile_name.split("\\")
+        filename = filename_list[len(filename_list)-1][:-4] + ".bin"
+
+        with open(f"saved_models/{filename}","wb") as file:
+            pickle.dump(save_data, file)
+
+        print("Successfully stored file to Disk")
