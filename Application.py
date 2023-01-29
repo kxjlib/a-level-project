@@ -34,7 +34,6 @@ class Application(object):
     run = False
     ctx = None
     rnd = None
-    shaders = {}
     cam = None
     app_states = {}
     current_state = ""
@@ -66,7 +65,7 @@ class Application(object):
         }
         Info.current_screen = "main_menu"
 
-        self.rnd = Renderer(self.shaders)
+        self.rnd = Renderer()
 
         # define Camera
         self.cam = Camera(dimensions, [0.0, 0.0, -10.0], [0.0, 0.0, 1.0])
@@ -75,7 +74,8 @@ class Application(object):
     def shader_init(self):
         # all Shaders (Registry Name, Filename)
         shaders = {'texture3D': "texture3D",
-                   'UI2D': "UI2D"}
+                   'UI2D': "UI2D",
+                   'model3D': 'model3D'}
 
         ShaderManager.from_dict(self.ctx, shaders)
 

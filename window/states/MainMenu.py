@@ -27,7 +27,7 @@ class MainMenu(State):
             gl_ctx, "settings_icon", 0.1, 0.1 * Info.aspect_ratio, 0.9, 1 - (0.1 * Info.aspect_ratio))
 
         self.buttons['ff_sim_menu'] = Button(
-            gl_ctx, "button", 0.65, 0.1 * Info.aspect_ratio, 0, -0.4, "Simulation Playback", (0, 0, 0))
+            gl_ctx, "button", 0.65, 0.1 * Info.aspect_ratio, 0, -0.4, "Physics Simulation", (0, 0, 0))
 
         self.buttons['ff_mod_menu'] = Button(
             gl_ctx, "button", 0.5, 0.1 *

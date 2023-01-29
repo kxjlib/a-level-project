@@ -74,6 +74,10 @@ class ModelMenu(State):
         self.render_ui(gl_ctx)
     
     def begin_analysis(self):
+        # Ensures that a filename has been set
+        if self.sfile_name == None:
+            return
+
         mesh = Mesh3D(self.sfile_name)
 
         m_volume = mesh.volume
@@ -84,7 +88,8 @@ class ModelMenu(State):
         save_data = {
             "volume": m_volume,
             "weight": m_weight,
-            "u_area": m_uarea
+            "u_area": m_uarea,
+            "m_file": self.sfile_name
         }
 
         filename_list = self.sfile_name.split("\\")

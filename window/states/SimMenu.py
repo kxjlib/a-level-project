@@ -9,6 +9,7 @@ from ..impl.Text import Text
 from ..impl.InformationManager import Info
 from ..renderer.Renderer import Renderer
 from ..renderer.Camera import Camera
+from ..simulation.PhysicsHandler import PhysicsHandler
 
 import moderngl
 from win32 import win32gui
@@ -23,10 +24,11 @@ class SimMenu(State):
 
     def __init__(self, gl_ctx: moderngl.Context):
         super().__init__(gl_ctx)
+        self.simulation_began = False
 
     def model_init(self, gl_ctx: moderngl.Context):
         self.text['sm_name'] = Text(
-            gl_ctx, "Simulation Playback", (255, 255, 255), 200, "sm_menu_main_text", 0, 0.7)
+            gl_ctx, "Physics Simulation", (255, 255, 255), 200, "sm_menu_main_text", 0, 0.7)
         
         self.buttons['start'] = Button(
             gl_ctx, "button", 0.3, 0.1 * Info.aspect_ratio, 0, -0.6, "Start", (0, 0, 0))
@@ -38,14 +40,16 @@ class SimMenu(State):
         prompt_res = win32gui.GetOpenFileNameW(
             InitialDir=os.environ['temp'],
             Flags = win32con.OFN_EXPLORER,
-            Title= "Select a Simulation",
-            DefExt="sim"
+            Title= "Select a Model File",
+            DefExt="bin"
         )
         return prompt_res[0]
 
     def update(self, gl_ctx: moderngl.Context = None):
         if self.buttons['start'].is_clicked():
-            print("start")
+            self.phys_handler = PhysicsHandler(self.sfile_name, gl_ctx)
+            self.simulation_began = True
+
         if self.buttons['sim_select'].is_clicked():
             self.sfile_name = self.file_prompt()
             self.text['ff_filename'] = Text(
@@ -66,4 +70,9 @@ class SimMenu(State):
 
     def render(self, gl_ctx: moderngl.Context, renderer: Renderer, camera: Camera):
         gl_ctx.clear(0.1, 0.1, 0.1)
-        self.render_ui(gl_ctx)
+        
+        if not self.simulation_began:
+            self.render_ui(gl_ctx)
+
+        if self.simulation_began:
+            renderer.render_object(self.phys_handler.render_model, camera)

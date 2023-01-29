@@ -11,21 +11,21 @@ from .bindable.Object import Object
 from .Camera import Camera
 from pyrr import Matrix44, Vector3
 
+from .ShaderManager import ShaderManager
 
 class Renderer(object):
     # Variables used by class
-    _shaders = {}
     _no_move = Matrix44.from_translation(Vector3([0.0, 0.0, 0.0]))
 
-    def __init__(self, shaders):
-        self._shaders = shaders
+    def __init__(self):
+        pass
 
     def render_object(self, obj: Object, camera: Camera):
         mat_transform = self._no_move
         if obj.pos != [0, 0, 0]:
             mat_transform = obj.mat
 
-        self._shaders[obj.shaderid]['mvp'].write(
+        ShaderManager.shaders[obj.shaderid]['mvp'].write(
             (camera.mv * mat_transform).astype('f4'))
         obj.vao.render()
     
